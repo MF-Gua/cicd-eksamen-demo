@@ -1,4 +1,4 @@
-name: cicdworkflow.yml
+name: ci.yml
 on:
   push:
     branches: [main]
