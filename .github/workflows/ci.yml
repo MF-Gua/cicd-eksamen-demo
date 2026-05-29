@@ -1,4 +1,4 @@
-name: ci.yml
+name: CI – cicd-eksamen-demo
 
 on:
   push:
@@ -20,7 +20,14 @@ jobs:
         with:
           java-version: '21'
           distribution: temurin
-          cache: maven
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            linux-maven-
 
       - name: Byg og test med Maven
         run: mvn test -B --no-transfer-progress
