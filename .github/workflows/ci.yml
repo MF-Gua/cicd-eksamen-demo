@@ -1,33 +1,31 @@
 name: CI – cicd-eksamen-demo
 
-on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
 
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+build-and-test:          # Jobbet hedder build-and-test
+  runs-on: ubuntu-latest # Kører på en frisk Ubuntu VM hos GitHub
 
-    steps:
-      - name: Checkout kode
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+  steps:
+    - name: Checkout kode
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      # Hash-pinning: immutable SHA i stedet for mutable tag (@v4) — sikring mod supply chain-angreb
 
-      - name: Opsæt Java 21
-        uses: actions/setup-java@v4
-        with:
-          java-version: '21'
-          distribution: temurin
+    - name: Opsæt Java 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'      # Java-version matcher projektet
+        distribution: temurin   # Eclipse Temurin — fri OpenJDK-distribution
 
-      - name: Cache Maven dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            linux-maven-
+    - name: Cache Maven dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2/repository  # Den mappe Maven gemmer downloadede dependencies i
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        # Cache key: hash af pom.xml — ændres pom.xml, ugyldiggøres cachen (cache miss → ny download)
+        restore-keys: |
+          linux-maven-          # Fallback: brug seneste cache med dette præfiks hvis eksakt key ikke findes
 
-      - name: Byg og test med Maven
-        run: mvn test -B --no-transfer-progress
+    - name: Byg og test med Maven
+      run: mvn test -B --no-transfer-progress
+      # mvn test: compile + kør unit tests
+      # -B: batch mode, CI-venlig output
+      # --no-transfer-progress: fjerner download-bars fra loggen
