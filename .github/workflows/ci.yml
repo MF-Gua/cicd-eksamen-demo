@@ -11,26 +11,26 @@ on:
 jobs:
 build-and-test:
   runs-on: ubuntu-latest
+  permissions:
+    contents: read
 
   steps:
     - name: Checkout kode
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      # Hash-pinning: immutable SHA
 
     - name: Opsæt Java 21
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@3a4f6e1af504cf6a31855fa9fe65ea73a62ef065 # v4
       with:
         java-version: '21'
         distribution: temurin
 
     - name: Cache Maven dependencies
-      uses: actions/cache@v4
+      uses: actions/cache@d4323d4dc3a8301a5e4e91de63e3ada3a3f3bcb7 # v4
       with:
         path: ~/.m2/repository
         key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-
         restore-keys: |
-          linux-maven-          # Fallback
+          ${{ runner.os }}-maven-
 
     - name: Byg og test med Maven
-      run: mvn test -B --no-transfer-progress
+      run: mvn verify -B --no-transfer-progress
