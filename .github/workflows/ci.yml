@@ -5,13 +5,11 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-
   workflow_dispatch:
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout kode
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -29,26 +27,28 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             linux-maven-
+
       - name: Byg og test med Maven
         run: mvn test -B --no-transfer-progress
 
 
-        #DEPLOYMENT#
 
-        deploy:
-          runs-on: ubuntu-latest
-          needs: build-and-test
-          if: github.ref == 'refs/heads/main'
 
-          steps:
-            - name: Deploy til Azure VM
-              uses: appleboy/ssh-action@v1
-              with:
-                host: ${{ secrets.SERVER_HOST }}
-                username: ${{ secrets.SERVER_USER }}
-                key: ${{ secrets.SSH_PRIVATE_KEY }}
-                script: |
-                  cd /app
-                  git pull origin main
-                  mvn package -DskipTests
-                  systemctl restart myapp
+
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Deploy til Azure VM
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /app
+            git pull origin main
+            mvn package -DskipTests
+            systemctl restart myapp
